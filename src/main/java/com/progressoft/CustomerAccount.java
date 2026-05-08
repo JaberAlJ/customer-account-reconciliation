@@ -206,6 +206,21 @@ public class CustomerAccount {
         return conflicts.toString();
     }
 
+    public boolean hasValidIdentifiers() {
+        for (String id : identifiers) {
+            if (validate(0, id).isValid) return true;
+        }
+        return false;
+    }
+
+    public int getValidCount() {
+        int count = 0;
+        for (String id : identifiers) {
+            if (validate(0, id).isValid) count++;
+        }
+        return count;
+    }
+
     public static CustomerAccount of(List<String> identifiers) {
         return new CustomerAccount(identifiers);
     }

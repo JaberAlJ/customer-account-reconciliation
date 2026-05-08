@@ -32,6 +32,10 @@ public class AccountCheckRequest {
 
     private String ownershipResult;
 
+    private String status;
+
+    private String failureReason;
+
     // --- Getters and Setters ---
 
     public Long getId() {
@@ -112,5 +116,21 @@ public class AccountCheckRequest {
 
     public void setOwnershipResult(String ownershipResult) {
         this.ownershipResult = ownershipResult;
+    }
+
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
+    }
+
+    public String getFailureReason() {
+        return failureReason;
+    }
+
+    public void setFailureReason(String failureReason) {
+        this.failureReason = failureReason;
     }
 }

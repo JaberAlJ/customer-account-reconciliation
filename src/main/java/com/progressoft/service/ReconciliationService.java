@@ -48,12 +48,13 @@ public class ReconciliationService {
                     continue;
                 }
 
+                batch.setTotalRows(batch.getTotalRows() + 1);
+
                 String[] columns = line.split(",");
                 if (columns.length < 6) {
+                    saveInvalidRow(batch, null, null, null, "Malformed CSV row (too few columns)");
                     continue;
                 }
-
-                batch.setTotalRows(batch.getTotalRows() + 1);
 
                 String requestId = columns[0].trim();
                 String customerRef = columns[1].trim();
@@ -62,12 +63,28 @@ public class ReconciliationService {
                 String identifier3 = columns[4].trim();
                 String submittedAtStr = columns[5].trim();
 
+                // check for missing fields
+                if (requestId.isEmpty() || customerRef.isEmpty() || identifier1.isEmpty() || submittedAtStr.isEmpty()) {
+                    String finalRequestId = requestId.isEmpty() ? "INVALID-REQ" : requestId;
+                    saveInvalidRow(batch, finalRequestId, customerRef, null, "Missing required fields");
+                    continue;
+                }
+
                 // check for duplicate requestId, either from this batch session or from the requestRepository
                 if (seenInFile.contains(requestId) || requestRepository.findByRequestId(requestId).isPresent()) {
                     batch.setDuplicateRows(batch.getDuplicateRows() + 1);
                     continue;
                 }
                 seenInFile.add(requestId);
+
+                // validate submission at
+                LocalDateTime submittedAt;
+                try {
+                    submittedAt = LocalDateTime.parse(submittedAtStr, DateTimeFormatter.ISO_DATE_TIME);
+                } catch (Exception e) {
+                    saveInvalidRow(batch, requestId, customerRef, null, "Invalid timestamp format: " + submittedAtStr);
+                    continue;
+                }
 
                 // validate the identifiers
                 CustomerAccount account = CustomerAccount.of(Arrays.asList(identifier1, identifier2, identifier3));
@@ -80,26 +97,42 @@ public class ReconciliationService {
                 request.setIdentifier1(identifier1);
                 request.setIdentifier2(identifier2);
                 request.setIdentifier3(identifier3);
-                try {
-                    request.setSubmittedAt(LocalDateTime.parse(submittedAtStr, DateTimeFormatter.ISO_DATE_TIME));
-                } catch (Exception e) {
-                    request.setSubmittedAt(LocalDateTime.now());
-                }
+                request.setSubmittedAt(submittedAt);
                 request.setValidationSummary(summaryString);
                 request.setOwnershipResult(determineOwnershipResult(summaryString));
 
-                requestRepository.save(request);
-
-                if (summaryString.contains("invalid")) {
+                if (!account.hasValidIdentifiers()) {
+                    request.setStatus("INVALID");
+                    request.setFailureReason("No valid identifiers provided");
                     batch.setInvalidRows(batch.getInvalidRows() + 1);
+                } else {
+                    request.setStatus("IMPORTED");
+                    batch.setImportedRows(batch.getImportedRows() + 1);
                 }
-                batch.setImportedRows(batch.getImportedRows() + 1);
+
+                requestRepository.save(request);
             }
         } catch (Exception e) {
             throw new RuntimeException("Error reading CSV file: " + e.getMessage());
         }
 
         return batchRepository.save(batch);
+    }
+
+    private void saveInvalidRow(ImportBatch batch, String requestId, String customerRef, LocalDateTime submittedAt, String reason) {
+        AccountCheckRequest request = new AccountCheckRequest();
+
+        request.setBatchId(batch.getId());
+        request.setRequestId(requestId);
+        request.setCustomerReference(customerRef);
+        request.setSubmittedAt(submittedAt != null ? submittedAt : LocalDateTime.now());
+        request.setStatus("INVALID");
+        request.setFailureReason(reason);
+        request.setOwnershipResult("NO_VALID_IDENTIFIERS");
+        request.setValidationSummary(reason);
+
+        requestRepository.save(request);
+        batch.setInvalidRows(batch.getInvalidRows() + 1);
     }
 
     private String determineOwnershipResult(String summary) {

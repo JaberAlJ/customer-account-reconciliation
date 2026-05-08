@@ -67,7 +67,7 @@ public class AccountCheckController {
     @GetMapping("/failed")
     public List<AccountCheckRequest> getFailedRows() {
         return requestRepository.findAll().stream()
-                .filter(request -> request.getValidationSummary().contains("invalid"))
+                .filter(request -> "INVALID".equals(request.getStatus()))
                 .collect(Collectors.toList());
     }
 
@@ -76,7 +76,7 @@ public class AccountCheckController {
     @GetMapping("/imported")
     public List<AccountCheckRequest> getImportedRows() {
         return requestRepository.findAll().stream()
-                .filter(request -> request.getValidationSummary().contains("valid"))
+                .filter(request -> "IMPORTED".equals(request.getStatus()))
                 .collect(Collectors.toList());
     }
 }

@@ -82,3 +82,9 @@ databaseChangeLog:
               - column:
                   name: ownership_result
                   type: VARCHAR(50)
+              - column:
+                  name: status
+                  type: VARCHAR(50)
+              - column:
+                  name: failure_reason
+                  type: VARCHAR(500)
