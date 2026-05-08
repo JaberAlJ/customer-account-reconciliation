@@ -1,8 +1,10 @@
-.PHONY: test run db-up db-down clean
+.PHONY: customer-account-test test run db-up db-down clean
+
+customer-account-test:
+	mvn test -Dtest=CustomerAccountTest
 
 test:
 	mvn test
-	# mvn test -Dtest=CustomerAccountTest
 
 run:
 	mvn spring-boot:run
