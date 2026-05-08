@@ -3,6 +3,7 @@
 test:
 	mvn test
 	# mvn test -Dtest=CustomerAccountTest
+
 run:
 	mvn spring-boot:run
 
