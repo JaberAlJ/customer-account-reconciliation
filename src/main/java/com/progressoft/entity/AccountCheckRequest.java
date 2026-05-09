@@ -37,8 +37,6 @@ public class AccountCheckRequest {
 
     private String status;
 
-    private String failureReason;
-
     // --- Getters and Setters ---
 
     public Long getId() {
@@ -129,13 +127,5 @@ public class AccountCheckRequest {
 
     public void setStatus(String status) {
         this.status = status;
-    }
-
-    public String getFailureReason() {
-        return failureReason;
-    }
-
-    public void setFailureReason(String failureReason) {
-        this.failureReason = failureReason;
     }
 }

@@ -111,7 +111,6 @@ public class ReconciliationService {
 
                 if (!account.hasValidIdentifiers()) {
                     request.setStatus("INVALID");
-                    request.setFailureReason("No valid identifiers provided");
                     batch.setInvalidRows(batch.getInvalidRows() + 1);
                 } else {
                     request.setStatus("IMPORTED");
@@ -137,7 +136,6 @@ public class ReconciliationService {
         request.setCustomerReference(customerRef);
         request.setSubmittedAt(submittedAt != null ? submittedAt : LocalDateTime.now());
         request.setStatus("INVALID");
-        request.setFailureReason(reason);
         request.setOwnershipResult("NO_VALID_IDENTIFIERS");
         request.setValidationSummary(reason);
 
