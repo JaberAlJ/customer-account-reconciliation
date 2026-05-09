@@ -2,7 +2,6 @@ package com.progressoft.controller;
 
 import com.progressoft.entity.AccountCheckRequest;
 import com.progressoft.entity.ImportBatch;
-import com.progressoft.repository.BatchRepository;
 import com.progressoft.repository.RequestRepository;
 import com.progressoft.service.ReconciliationService;
 import org.springframework.http.ResponseEntity;
@@ -17,12 +16,10 @@ import java.util.stream.Collectors;
 public class AccountCheckController {
 
     private final ReconciliationService reconciliationService;
-    private final BatchRepository batchRepository;
     private final RequestRepository requestRepository;
 
-    public AccountCheckController(ReconciliationService reconciliationService, BatchRepository batchRepository, RequestRepository requestRepository) {
+    public AccountCheckController(ReconciliationService reconciliationService, RequestRepository requestRepository) {
         this.reconciliationService = reconciliationService;
-        this.batchRepository = batchRepository;
         this.requestRepository = requestRepository;
     }
 
@@ -48,31 +45,27 @@ public class AccountCheckController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
-    // 3. Get Requests by Customer Reference
-    // GET /api/v1/account-checks/customer/{customerReference}
-    @GetMapping("/customer/{customerReference}")
-    public List<AccountCheckRequest> getByCustomer(@PathVariable String customerReference) {
-        return requestRepository.findByCustomerReference(customerReference);
+    // 3. List Requests (optional filtering by Customer Reference)
+    // GET /api/v1/account-checks?customerReference=
+    @GetMapping
+    public List<AccountCheckRequest> listRequests(@RequestParam(required = false) String customerReference) {
+        if (customerReference != null && !customerReference.isEmpty()) {
+            return requestRepository.findByCustomerReference(customerReference);
+        }
+        return requestRepository.findAll();
     }
 
-     // 4. List all Import Batches
-     // GET /api/v1/account-checks/batches
-    @GetMapping("/batches")
-    public List<ImportBatch> getAllBatches() {
-        return batchRepository.findAll();
-    }
-
-     // 5. List all rows that failed validation
-     // GET /api/v1/account-checks/failed
-    @GetMapping("/failed")
+     // 4. List all rows that failed validation
+     // GET /api/v1/account-checks/failures
+    @GetMapping("/failures")
     public List<AccountCheckRequest> getFailedRows() {
         return requestRepository.findAll().stream()
                 .filter(request -> "INVALID".equals(request.getStatus()))
                 .collect(Collectors.toList());
     }
 
-     // 6. List all rows that imported
-     // GET /api/v1/account-checks/failed
+     // 5. List all rows that imported
+     // GET /api/v1/account-checks/imported
     @GetMapping("/imported")
     public List<AccountCheckRequest> getImportedRows() {
         return requestRepository.findAll().stream()
