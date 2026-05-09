@@ -1,5 +1,6 @@
 package com.progressoft.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 
 import java.time.LocalDateTime;
@@ -13,8 +14,10 @@ public class AccountCheckRequest {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "batch_id")
-    private UUID batchId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "batch_id")
+    @JsonIgnore
+    private ImportBatch batch;
 
     @Column(unique = true)
     private String requestId;
@@ -46,13 +49,15 @@ public class AccountCheckRequest {
         this.id = id;
     }
 
-    public UUID getBatchId() {
-        return batchId;
+    public ImportBatch getBatch() {
+        return batch;
     }
 
-    public void setBatchId(UUID batchId) {
-        this.batchId = batchId;
+    public void setBatch(ImportBatch batch) {
+        this.batch = batch;
     }
+
+    public UUID getBatchId() { return batch != null ? batch.getId() : null; }
 
     public String getRequestId() {
         return requestId;

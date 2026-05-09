@@ -3,6 +3,8 @@ package com.progressoft.entity;
 import jakarta.persistence.*;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 @Entity
@@ -20,6 +22,9 @@ public class ImportBatch {
     private int importedRows;
     private int duplicateRows;
     private int invalidRows;
+
+    @OneToMany(mappedBy = "batch", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    private List<AccountCheckRequest> rows = new ArrayList<>();
 
     // --- Getters and Setters ---
 
@@ -77,5 +82,13 @@ public class ImportBatch {
 
     public void setInvalidRows(int invalidRows) {
         this.invalidRows = invalidRows;
+    }
+
+    public List<AccountCheckRequest> getRows() {
+        return rows;
+    }
+
+    public void setRows(List<AccountCheckRequest> rows) {
+        this.rows = rows;
     }
 }

@@ -91,7 +91,7 @@ public class ReconciliationService {
                 String summaryString = account.getSummary();
 
                 AccountCheckRequest request = new AccountCheckRequest();
-                request.setBatchId(batch.getId());
+                request.setBatch(batch);
                 request.setRequestId(requestId);
                 request.setCustomerReference(customerRef);
                 request.setIdentifier1(identifier1);
@@ -101,6 +101,8 @@ public class ReconciliationService {
                 request.setValidationSummary(summaryString);
                 request.setOwnershipResult(determineOwnershipResult(summaryString));
 
+                batch.getRows().add(request);
+
                 if (!account.hasValidIdentifiers()) {
                     request.setStatus("INVALID");
                     request.setFailureReason("No valid identifiers provided");
@@ -109,8 +111,6 @@ public class ReconciliationService {
                     request.setStatus("IMPORTED");
                     batch.setImportedRows(batch.getImportedRows() + 1);
                 }
-
-                requestRepository.save(request);
             }
         } catch (Exception e) {
             throw new RuntimeException("Error reading CSV file: " + e.getMessage());
@@ -122,7 +122,7 @@ public class ReconciliationService {
     private void saveInvalidRow(ImportBatch batch, String requestId, String customerRef, LocalDateTime submittedAt, String reason) {
         AccountCheckRequest request = new AccountCheckRequest();
 
-        request.setBatchId(batch.getId());
+        request.setBatch(batch);
         if (requestId == null || requestId.trim().isEmpty()) {
             requestId = "INVALID-REQ-" + java.util.UUID.randomUUID();
         }
@@ -135,7 +135,7 @@ public class ReconciliationService {
         request.setOwnershipResult("NO_VALID_IDENTIFIERS");
         request.setValidationSummary(reason);
 
-        requestRepository.save(request);
+        batch.getRows().add(request);
         batch.setInvalidRows(batch.getInvalidRows() + 1);
     }
 
