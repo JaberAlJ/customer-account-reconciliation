@@ -65,7 +65,7 @@ public class ReconciliationService {
 
                 // check for missing fields
                 if (requestId.isEmpty() || customerRef.isEmpty() || identifier1.isEmpty() || submittedAtStr.isEmpty()) {
-                    String finalRequestId = requestId.isEmpty() ? "INVALID-REQ" : requestId;
+                    String finalRequestId = requestId.isEmpty() ? "INVALID-REQ-" + java.util.UUID.randomUUID() : requestId;
                     saveInvalidRow(batch, finalRequestId, customerRef, null, "Missing required fields");
                     continue;
                 }
@@ -123,6 +123,10 @@ public class ReconciliationService {
         AccountCheckRequest request = new AccountCheckRequest();
 
         request.setBatchId(batch.getId());
+        if (requestId == null || requestId.trim().isEmpty()) {
+            requestId = "INVALID-REQ-" + java.util.UUID.randomUUID();
+        }
+
         request.setRequestId(requestId);
         request.setCustomerReference(customerRef);
         request.setSubmittedAt(submittedAt != null ? submittedAt : LocalDateTime.now());
