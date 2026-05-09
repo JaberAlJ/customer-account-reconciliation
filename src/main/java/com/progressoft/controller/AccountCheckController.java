@@ -15,6 +15,8 @@ import java.util.stream.Collectors;
 @RequestMapping("/api/v1/account-checks")
 public class AccountCheckController {
 
+    private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(AccountCheckController.class);
+
     private final ReconciliationService reconciliationService;
     private final RequestRepository requestRepository;
 
@@ -32,6 +34,7 @@ public class AccountCheckController {
             ImportBatch result = reconciliationService.importCsv(file.getInputStream(), file.getOriginalFilename());
             return ResponseEntity.ok(result);
         } catch (Exception e) {
+            log.error("Failed to import file: {}", file.getOriginalFilename(), e);
             return ResponseEntity.internalServerError().build();
         }
     }

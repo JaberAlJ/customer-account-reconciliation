@@ -20,6 +20,8 @@ import java.util.Set;
 @Service
 public class ReconciliationService {
 
+    private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(ReconciliationService.class);
+
     private final BatchRepository batchRepository;
     private final RequestRepository requestRepository;
 
@@ -30,6 +32,8 @@ public class ReconciliationService {
 
     @Transactional
     public ImportBatch importCsv(InputStream inputStream, String fileName) {
+        log.info("Starting CSV import for file: {}", fileName);
+
         // create new "Batch" to track this import session
         ImportBatch batch = new ImportBatch();
         batch.setFileName(fileName);
@@ -117,7 +121,10 @@ public class ReconciliationService {
                     batch.setImportedRows(batch.getImportedRows() + 1);
                 }
             }
+            log.info("Completed CSV import for file: {}. Total: {}, Imported: {}, Invalid: {}, Duplicates: {}",
+                    fileName, batch.getTotalRows(), batch.getImportedRows(), batch.getInvalidRows(), batch.getDuplicateRows());
         } catch (Exception e) {
+            log.error("Error processing CSV file: {}", fileName, e);
             throw new RuntimeException("Error reading CSV file: " + e.getMessage());
         }
 
