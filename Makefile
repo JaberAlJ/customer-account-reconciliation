@@ -1,13 +1,19 @@
-.PHONY: customer-account-test test run db-up db-down clean
+.PHONY: build test run up down db-up db-down clean
 
-customer-account-test:
-	mvn test -Dtest=CustomerAccountTest
+build:
+	mvn clean package
 
 test:
 	mvn test
 
 run:
 	mvn spring-boot:run
+
+up:
+	docker compose up --build -d
+
+down:
+	docker compose down
 
 db-up:
 	docker compose up -d postgres
