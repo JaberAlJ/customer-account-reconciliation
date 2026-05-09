@@ -63,10 +63,10 @@ public class ReconciliationService {
                 String identifier3 = columns[4].trim();
                 String submittedAtStr = columns[5].trim();
 
-                // check for missing fields
-                if (requestId.isEmpty() || customerRef.isEmpty() || identifier1.isEmpty() || submittedAtStr.isEmpty()) {
-                    String finalRequestId = requestId.isEmpty() ? "INVALID-REQ-" + java.util.UUID.randomUUID() : requestId;
-                    saveInvalidRow(batch, finalRequestId, customerRef, null, "Missing required fields");
+                // check for missing requestId field
+                if (requestId.isEmpty()) {
+                    String finalRequestId = "INVALID-REQ-" + java.util.UUID.randomUUID();
+                    saveInvalidRow(batch, finalRequestId, customerRef, null, "Missing request_id");
                     continue;
                 }
 
@@ -76,6 +76,12 @@ public class ReconciliationService {
                     continue;
                 }
                 seenInFile.add(requestId);
+
+                // check for other missing fields
+                if (customerRef.isEmpty() || identifier1.isEmpty() || submittedAtStr.isEmpty()) {
+                    saveInvalidRow(batch, requestId, customerRef, null, "Missing required fields");
+                    continue;
+                }
 
                 // validate submission at
                 LocalDateTime submittedAt;
